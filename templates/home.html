@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Welcome to Vehicle Order Management</h2>
+                </div>
+                <div class="card-body">
+                    {% if user.is_superuser %}
+                    <!-- Admin Dashboard -->
+                    <div class="admin-dashboard">
+                        <h3 class="mb-4">Admin Dashboard</h3>
+                        {% comment %} <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">User Management</h5>
+                                        <p class="card-text">Manage system users and their permissions</p>
+                                        <a href="/admin/auth/user/" class="btn btn-light">Manage Users</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Vehicle Management</h5>
+                                        <p class="card-text">Add, edit, or remove vehicles from inventory</p>
+                                        <a href="#" class="btn btn-light">Manage Vehicles</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <div class="card bg-warning text-dark">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Order Overview</h5>
+                                        <p class="card-text">View and manage all vehicle orders</p>
+                                        <a href="#" class="btn btn-light">View All Orders</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div> {% endcomment %}
+
+                        <!-- All Orders Table -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">All Orders</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if orders %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>User</th>
+                                                    <th>Destination</th>
+                                                    <th>Goods Type</th>
+                                                    <th>Delivery Date</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for order in orders %}
+                                                    <tr>
+                                                        <td>#{{ order.id }}</td>
+                                                        <td>{{ order.user.username }}</td>
+                                                        <td>{{ order.destination }}</td>
+                                                        <td>{{ order.goods_type }}</td>
+                                                        <td>{{ order.preferred_delivery_date|date:"M d, Y" }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'approved' %}success{% elif order.status == 'cancelled' %}danger{% else %}info{% endif %}">
+                                                                {{ order.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a href="{% url 'view_order' order.id %}" class="btn btn-sm btn-primary">View</a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">No orders found in the system.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <!-- User Dashboard -->
+                    <div class="user-dashboard">
+                        <h3 class="mb-4">User Dashboard</h3>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">My Orders</h5>
+                                        <p class="card-text">View and track your vehicle orders</p>
+                                        <p class="card-text">
+                                            <small class="text-white">Total Orders: {{ orders|length }}</small>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body">
+                                        <h5 class="card-title">New Order</h5>
+                                        <p class="card-text">Place a new vehicle order</p>
+                                        <a href="{% url 'create_order' %}" class="btn btn-light">Place Order</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- User's Orders Table -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">My Orders</h5>
+                            </div>
+                            <div class="card-body">
+                                {% if orders %}
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Order ID</th>
+                                                    <th>Destination</th>
+                                                    <th>Goods Type</th>
+                                                    <th>Delivery Date</th>
+                                                    <th>Status</th>
+                                                    <th>Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for order in orders %}
+                                                    <tr>
+                                                        <td>#{{ order.id }}</td>
+                                                        <td>{{ order.destination }}</td>
+                                                        <td>{{ order.goods_type }}</td>
+                                                        <td>{{ order.preferred_delivery_date|date:"M d, Y" }}</td>
+                                                        <td>
+                                                            <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'approved' %}success{% elif order.status == 'cancelled' %}danger{% else %}info{% endif %}">
+                                                                {{ order.get_status_display }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a href="{% url 'view_order' order.id %}" class="btn btn-sm btn-primary">View</a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                {% else %}
+                                    <p class="text-muted">You haven't placed any orders yet. Click "Place Order" to create your first order.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

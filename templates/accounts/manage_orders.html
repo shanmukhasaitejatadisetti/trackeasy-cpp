@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Orders{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">Manage Orders</h2>
+            <div class="d-flex">
+                <form class="d-flex me-2" method="get">
+                    <input type="text" name="search" class="form-control form-control-sm me-2" 
+                           placeholder="Search orders..." value="{{ request.GET.search }}">
+                    <select name="status" class="form-select form-select-sm me-2" style="width: auto;">
+                        <option value="">All Status</option>
+                        {% for status_code, status_label in status_choices %}
+                            <option value="{{ status_code }}" {% if request.GET.status == status_code %}selected{% endif %}>
+                                {{ status_label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-light btn-sm">Filter</button>
+                </form>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if orders %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Destination</th>
+                                <th>Goods Type</th>
+                                <th>Delivery Date</th>
+                                <th>Created Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                                <tr>
+                                    <td>#{{ order.id }}</td>
+                                    <td>{{ order.user.username }}</td>
+                                    <td>{{ order.destination }}</td>
+                                    <td>{{ order.goods_type }}</td>
+                                    <td>{{ order.preferred_delivery_date|date:"M d, Y" }}</td>
+                                    <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge rounded-pill bg-{% if order.status == 'pending' %}warning{% elif order.status == 'approved' %}success{% elif order.status == 'cancelled' %}danger{% elif order.status == 'in_transit' %}info{% else %}secondary{% endif %}">
+                                            {{ order.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{% url 'view_order' order.id %}" class="btn btn-sm btn-primary">View</a>
+                                            <button type="button" class="btn btn-sm btn-success dropdown-toggle" data-bs-toggle="dropdown">
+                                                Update
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                {% for status_code, status_label in status_choices %}
+                                                    {% if status_code != order.status %}
+                                                        <li>
+                                                            <form method="post" action="{% url 'update_order_status' order.id %}">
+                                                                {% csrf_token %}
+                                                                <input type="hidden" name="status" value="{{ status_code }}">
+                                                                <button type="submit" class="dropdown-item">
+                                                                    Mark as {{ status_label }}
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-muted text-center">No orders found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table td, .table th {
+    vertical-align: middle;
+}
+.badge {
+    font-size: 0.9em;
+    padding: 0.5em 1em;
+}
+.btn-group {
+    white-space: nowrap;
+}
+</style>
+{% endblock %}

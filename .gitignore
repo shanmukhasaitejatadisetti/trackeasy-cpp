@@ -1,0 +1,78 @@
+# Django specific #
+*.log
+*.pot
+*.pyc
+__pycache__/
+db.sqlite3
+media/
+*.sqlite3
+*.py[co]
+*~
+
+# If you are using MySQL or PostgreSQL with Django:
+*.db
+
+# Environment variables #
+.env
+.env.*
+
+# Django migrations #
+/migrations/
+
+# Static and media files #
+staticfiles/
+media/
+
+# Local settings #
+settings_local.py
+
+# venv #
+venv/
+.env/
+*.env
+
+# PyCharm #
+.idea/
+
+# Visual Studio Code #
+.vscode/
+
+# macOS #
+.DS_Store
+
+# Docker #
+*.log
+*.pid
+*.seed
+*.cover
+
+# Celery #
+celerybeat-schedule
+celerybeat.pid
+
+# Coverage #
+.coverage
+.tox
+htmlcov/
+
+# Jupyter Notebook #
+.ipynb_checkpoints
+
+# MyPy #
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pytest #
+.pytest_cache/
+
+# AWS #
+*.pem
+
+# Gunicorn #
+gunicorn-error.log
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
