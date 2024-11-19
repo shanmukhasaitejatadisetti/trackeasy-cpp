@@ -41,7 +41,7 @@ class OrderForm(forms.ModelForm):
     )
     image = forms.ImageField(
         required=False,
-        help_text='Optional: Upload an image for your order (e.g., product photo)'
+        help_text='Optional: Upload an image for delivery instructions'
     )
 
     class Meta:

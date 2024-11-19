@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.db.models import Q
 import boto3
+import json
 import uuid
 from .forms import UserRegistrationForm, OrderForm
 from .models import Order
@@ -75,6 +76,10 @@ def home(request):
 #         form = OrderForm()
 #     return render(request, 'accounts/create_order.html', {'form': form})
 
+
+# Initialize the SQS client
+sqs = boto3.client('sqs', region_name='us-east-1')
+
 @login_required
 def create_order(request):
     if request.method == 'POST':
@@ -82,7 +87,7 @@ def create_order(request):
         if form.is_valid():
             order = form.save(commit=False)
             order.user = request.user
-            
+
             # Upload image to S3 if provided
             image_file = request.FILES.get('image')
             if image_file:
@@ -98,21 +103,49 @@ def create_order(request):
                 except Exception as e:
                     messages.error(request, f"Failed to upload image: {str(e)}")
                     return render(request, 'accounts/create_order.html', {'form': form})
-            
-            
+
             order.save()
-            
-            # Trigger the Lambda API alert
-            success, message = trigger_order_alert(order)
-            if success:
-                messages.success(request, 'Order created successfully and alert triggered!')
-            else:
-                messages.warning(request, f'Order created but alert failed: {message}')
-            
+
+            # Send message to SQS with order details
+            try:
+                queue_url = "https://sqs.us-east-1.amazonaws.com/975049962424/vehicle-orders-queue"
+                message_body = {
+                    "order_id": order.id,
+                    "user": order.user.username,
+                    "destination": order.destination,
+                    "goods_type": order.goods_type,
+                    "status": order.status,
+                    "image_url": order.image_url,
+                    "created_at": str(order.created_at),
+                }
+                sqs_response = sqs.send_message(
+                    QueueUrl=queue_url,
+                    MessageBody=json.dumps(message_body),
+                    MessageAttributes={
+                        "OrderId": {
+                            "DataType": "String",
+                            "StringValue": str(order.id)
+                        },
+                        "User": {
+                            "DataType": "String",
+                            "StringValue": order.user.username
+                        },
+                        "Status": {
+                            "DataType": "String",
+                            "StringValue": order.status
+                        },
+                    }
+                )
+                print("SQS Send Message Response:", sqs_response)
+                messages.success(request, 'Order created successfully and sent to the queue!')
+            except Exception as e:
+                messages.warning(request, f"Order created, but failed to send to SQS: {str(e)}")
+
             return redirect('home')
     else:
         form = OrderForm()
     return render(request, 'accounts/create_order.html', {'form': form})
+
 
 @login_required
 def view_order(request, order_id):
