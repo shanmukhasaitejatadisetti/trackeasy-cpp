@@ -1,0 +1,11 @@
+LICENSE
+MANIFEST.in
+README.md
+setup.py
+sqs_handler/__init__.py
+sqs_handler/sqs_handler.py
+sqs_handler.egg-info/PKG-INFO
+sqs_handler.egg-info/SOURCES.txt
+sqs_handler.egg-info/dependency_links.txt
+sqs_handler.egg-info/requires.txt
+sqs_handler.egg-info/top_level.txt

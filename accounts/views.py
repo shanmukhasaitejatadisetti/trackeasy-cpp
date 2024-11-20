@@ -9,6 +9,7 @@ import uuid
 from .forms import UserRegistrationForm, OrderForm
 from .models import Order
 from .utils import trigger_order_alert
+from sqs_handler import SQSHandler
 
 def login_view(request):
     if request.method == 'POST':
@@ -78,7 +79,73 @@ def home(request):
 
 
 # Initialize the SQS client
-sqs = boto3.client('sqs', region_name='us-east-1')
+# sqs = boto3.client('sqs', region_name='us-east-1')
+
+# @login_required
+# def create_order(request):
+#     if request.method == 'POST':
+#         form = OrderForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             order = form.save(commit=False)
+#             order.user = request.user
+
+#             # Upload image to S3 if provided
+#             image_file = request.FILES.get('image')
+#             if image_file:
+#                 s3 = boto3.client('s3', region_name='us-east-1')
+#                 image_key = f"orders/{uuid.uuid4()}_{image_file.name}"
+#                 try:
+#                     s3.upload_fileobj(
+#                         image_file,
+#                         'trackeasy',  # S3 bucket name
+#                         image_key
+#                     )
+#                     order.image_url = f"https://trackeasy.s3.amazonaws.com/{image_key}"
+#                 except Exception as e:
+#                     messages.error(request, f"Failed to upload image: {str(e)}")
+#                     return render(request, 'accounts/create_order.html', {'form': form})
+
+#             order.save()
+
+#             # Send message to SQS with order details
+#             try:
+#                 queue_url = "https://sqs.us-east-1.amazonaws.com/975049962424/vehicle-orders-queue"
+#                 message_body = {
+#                     "order_id": order.id,
+#                     "user": order.user.username,
+#                     "destination": order.destination,
+#                     "goods_type": order.goods_type,
+#                     "status": order.status,
+#                     "image_url": order.image_url,
+#                     "created_at": str(order.created_at),
+#                 }
+#                 sqs_response = sqs.send_message(
+#                     QueueUrl=queue_url,
+#                     MessageBody=json.dumps(message_body),
+#                     MessageAttributes={
+#                         "OrderId": {
+#                             "DataType": "String",
+#                             "StringValue": str(order.id)
+#                         },
+#                         "User": {
+#                             "DataType": "String",
+#                             "StringValue": order.user.username
+#                         },
+#                         "Status": {
+#                             "DataType": "String",
+#                             "StringValue": order.status
+#                         },
+#                     }
+#                 )
+#                 print("SQS Send Message Response:", sqs_response)
+#                 messages.success(request, 'Order created successfully and sent to the queue!')
+#             except Exception as e:
+#                 messages.warning(request, f"Order created, but failed to send to SQS: {str(e)}")
+
+#             return redirect('home')
+#     else:
+#         form = OrderForm()
+#     return render(request, 'accounts/create_order.html', {'form': form})
 
 @login_required
 def create_order(request):
@@ -106,22 +173,24 @@ def create_order(request):
 
             order.save()
 
-            # Send message to SQS with order details
+            # Use SQSHandler to send message to SQS
+            sqs = SQSHandler(region_name='us-east-1')  # Initialize the SQSHandler
+            queue_url = "https://sqs.us-east-1.amazonaws.com/975049962424/vehicle-orders-queue"
+            message_body = {
+                "order_id": order.id,
+                "user": order.user.username,
+                "destination": order.destination,
+                "goods_type": order.goods_type,
+                "status": order.status,
+                "image_url": order.image_url,
+                "created_at": str(order.created_at),
+            }
+
             try:
-                queue_url = "https://sqs.us-east-1.amazonaws.com/975049962424/vehicle-orders-queue"
-                message_body = {
-                    "order_id": order.id,
-                    "user": order.user.username,
-                    "destination": order.destination,
-                    "goods_type": order.goods_type,
-                    "status": order.status,
-                    "image_url": order.image_url,
-                    "created_at": str(order.created_at),
-                }
                 sqs_response = sqs.send_message(
-                    QueueUrl=queue_url,
-                    MessageBody=json.dumps(message_body),
-                    MessageAttributes={
+                    queue_url=queue_url,
+                    message_body=message_body,
+                    message_attributes={
                         "OrderId": {
                             "DataType": "String",
                             "StringValue": str(order.id)
@@ -138,7 +207,7 @@ def create_order(request):
                 )
                 print("SQS Send Message Response:", sqs_response)
                 messages.success(request, 'Order created successfully and sent to the queue!')
-            except Exception as e:
+            except RuntimeError as e:
                 messages.warning(request, f"Order created, but failed to send to SQS: {str(e)}")
 
             return redirect('home')

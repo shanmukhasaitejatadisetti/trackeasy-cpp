@@ -75,16 +75,24 @@ WSGI_APPLICATION = 'vehicle_order_management.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': secret['DATABASE_NAME'],
+#         'USER': secret['DATABASE_USER'],
+#         'PASSWORD': secret['DATABASE_PASSWORD'],
+#         'HOST': secret['DATABASE_HOST'],
+#         'PORT': secret['DATABASE_PORT'],
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': secret['DATABASE_NAME'],
-        'USER': secret['DATABASE_USER'],
-        'PASSWORD': secret['DATABASE_PASSWORD'],
-        'HOST': secret['DATABASE_HOST'],
-        'PORT': secret['DATABASE_PORT'],
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 
 # Password validation
