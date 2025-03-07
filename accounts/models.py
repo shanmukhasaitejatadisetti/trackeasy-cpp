@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import datetime as d
 
 class Order(models.Model):
     STATUS_CHOICES = [
@@ -28,7 +29,8 @@ class Order(models.Model):
     driver_contact = models.CharField(max_length=20, blank=True, null=True)
     delivery_requirements = models.TextField(blank=True, null=True)
     preferred_delivery_date = models.DateField()
-    created_at = models.DateTimeField(default=timezone.now)
+    # created_at = models.DateTimeField(default=timezone.now)
+    created_at = models.CharField(default=d.timestamp(d.now()),max_length=25)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     image_url = models.URLField(max_length=255, blank=True, null=True)  # New field for S3 image URL
 

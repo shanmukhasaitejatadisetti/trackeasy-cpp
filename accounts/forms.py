@@ -39,14 +39,15 @@ class OrderForm(forms.ModelForm):
         required=False,
         help_text='Optional: Specify any special delivery requirements (e.g., temperature control)'
     )
-    image = forms.ImageField(
-        required=False,
-        help_text='Optional: Upload an image for delivery instructions'
-    )
+    # image = forms.ImageField(
+    #     required=False,
+    #     help_text='Optional: Upload an image for delivery instructions'
+    # )
 
     class Meta:
         model = Order
-        fields = ['destination', 'goods_type', 'delivery_requirements', 'preferred_delivery_date', 'image']
+        # fields = ['destination', 'goods_type', 'delivery_requirements', 'preferred_delivery_date', 'image']
+        fields = ['destination', 'goods_type', 'delivery_requirements', 'preferred_delivery_date']
         widgets = {
             'destination': forms.TextInput(attrs={'class': 'form-control'}),
             'goods_type': forms.TextInput(attrs={'class': 'form-control'}),

@@ -76,3 +76,4 @@ gunicorn-error.log
 .elasticbeanstalk/*
 !.elasticbeanstalk/*.cfg.yml
 !.elasticbeanstalk/*.global.yml
+env/
