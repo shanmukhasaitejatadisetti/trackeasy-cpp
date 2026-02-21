@@ -39,3 +39,4 @@ sqs-handler==0.1.0
 twine==5.1.1
 urllib3==2.2.3
 zipp==3.21.0
+gunicorn==25.0.1
